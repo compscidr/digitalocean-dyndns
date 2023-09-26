@@ -3,12 +3,18 @@
 api_host="https://api.digitalocean.com/v2"
 sleep_interval=${SLEEP_INTERVAL:-300}
 remove_duplicates=${REMOVE_DUPLICATES:-"false"}
+use_ipv6=${USE_IPV6:-"false"}
 
 services=(
     "ifconfig.co"
     "ipinfo.io/ip"
     "ifconfig.me"
 )
+ipv6_commands=(
+    "ip neighbour | grep router | grep -v "fe80" | awk '{print $1}'"
+)
+
+[[ use_ipv6 = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
 
 die() {
     echo "$1"
@@ -28,12 +34,21 @@ while ( true ); do
         -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
         $dns_list"?per_page=200")
 
-    for service in ${services[@]}; do
-        echo "Trying with $service..."
+    if [[use_ipv6 = "true"]]; then :
+        for command in ${ipv6_commands[@]}; do
+            echo "Trying with $command..."
 
-        ip="$(curl -s $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
-        test -n "$ip" && break
-    done
+            ip="$($command)"
+            test -n "$ip" && break
+        done
+    else :
+        for service in ${services[@]}; do
+            echo "Trying with $service..."
+
+            ip="$(curl -s $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
+            test -n "$ip" && break
+        done
+    fi
 
     echo "Found IP address $ip"
 
@@ -42,8 +57,8 @@ while ( true ); do
         set -f
 
         for sub in ${NAME//;/ }; do
-            record_id=$(echo $domain_records| jq ".domain_records[] | select(.type == \"A\" and .name == \"$sub\") | .id")
-            record_data=$(echo $domain_records| jq -r ".domain_records[] | select(.type == \"A\" and .name == \"$sub\") | .data")
+            record_id=$(echo $domain_records| jq ".domain_records[] | select(.type == \"$domain_record_type\" and .name == \"$sub\") | .id")
+            record_data=$(echo $domain_records| jq -r ".domain_records[] | select(.type == \"$domain_record_type\" and .name == \"$sub\") | .data")
 
             if [ $(echo "$record_id" | wc -l) -ge 2 ]; then :
                 if [[ "${remove_duplicates}" == "true" ]]; then :
@@ -67,7 +82,7 @@ while ( true ); do
             # re-enable glob expansion
             set +f
 
-            data="{\"type\": \"A\", \"name\": \"$sub\", \"data\": \"$ip\"}"
+            data="{\"type\": \"$domain_record_type\", \"name\": \"$sub\", \"data\": \"$ip\"}"
             url="$dns_list/$record_id"
 
             if [[ -z $record_id ]]; then
