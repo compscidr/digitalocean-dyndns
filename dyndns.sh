@@ -35,12 +35,10 @@ while ( true ); do
         $dns_list"?per_page=200")
 
     if [[ "${use_ipv6}" = "true" ]]; then
-        for command in ${ipv6_commands[@]}; do
-            echo "Trying with $command..."
+        echo "Trying to get ipv6 address..."
 
-            ip=get_ipv6
-            test -n "$ip" && break
-        done
+        ip=get_ipv6
+        test -n "$ip" && break
     else
         for service in ${services[@]}; do
             echo "Trying with $service..."
