@@ -34,14 +34,14 @@ while ( true ); do
         -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
         $dns_list"?per_page=200")
 
-    if [["${use_ipv6}" = "true"]]; then :
+    if [[ "${use_ipv6}" = "true" ]]; then
         for command in ${ipv6_commands[@]}; do
             echo "Trying with $command..."
 
             ip="$($command)"
             test -n "$ip" && break
         done
-    else :
+    else
         for service in ${services[@]}; do
             echo "Trying with $service..."
 
