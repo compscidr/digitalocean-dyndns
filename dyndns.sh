@@ -14,7 +14,7 @@ ipv6_commands=(
     "ip neighbour | grep router | grep -v "fe80" | awk '{print $1}'"
 )
 
-[[ use_ipv6 = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
+[[ "${use_ipv6}" = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
 
 die() {
     echo "$1"
@@ -34,7 +34,7 @@ while ( true ); do
         -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
         $dns_list"?per_page=200")
 
-    if [[use_ipv6 = "true"]]; then :
+    if [["${use_ipv6}" = "true"]]; then :
         for command in ${ipv6_commands[@]}; do
             echo "Trying with $command..."
 
