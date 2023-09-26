@@ -37,7 +37,7 @@ while ( true ); do
     if [[ "${use_ipv6}" = "true" ]]; then
         echo "Trying to get ipv6 address..."
 
-        ip=get_ipv6
+        ip=$(get_ipv6)
     else
         for service in ${services[@]}; do
             echo "Trying with $service..."
