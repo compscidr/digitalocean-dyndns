@@ -10,9 +10,9 @@ services=(
     "ipinfo.io/ip"
     "ifconfig.me"
 )
-ipv6_commands=(
-    "ip neighbour | grep router | grep -v "fe80" | awk '{print \$1}'"
-)
+get_ipv6() {
+    ip neighbour | grep router | grep -v "fe80" | awk '{print \$1}'
+}
 
 [[ "${use_ipv6}" = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
 
@@ -38,7 +38,7 @@ while ( true ); do
         for command in ${ipv6_commands[@]}; do
             echo "Trying with $command..."
 
-            ip=ip neighbour | grep router | grep -v "fe80" | awk '{print \$1}'
+            ip=get_ipv6
             test -n "$ip" && break
         done
     else
