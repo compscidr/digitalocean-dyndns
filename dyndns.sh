@@ -41,7 +41,7 @@ while ( true ); do
         for service in ${ipv6_services[@]}; do
             echo "Trying with $service..."
 
-            ip="$(curl -6 -s $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
+            ip="$(curl -6 -s $service)"
             test -n "$ip" && break
         done
     else
