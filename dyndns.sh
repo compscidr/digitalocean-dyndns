@@ -10,9 +10,12 @@ services=(
     "ipinfo.io/ip"
     "ifconfig.me"
 )
-get_ipv6() {
-    ip -6 neigh | grep router | grep -v "fe80" | awk '{print $1}'
-}
+ipv6_services=(
+    "icanhazip.com"
+    "ifconfig.co"
+    "ipinfo.io/ip"
+    "ifconfig.me"
+)
 
 [[ "${use_ipv6}" = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
 
@@ -35,9 +38,12 @@ while ( true ); do
         $dns_list"?per_page=200")
 
     if [[ "${use_ipv6}" = "true" ]]; then
-        echo "Trying to get ipv6 address..."
+        for service in ${ipv6_services[@]}; do
+            echo "Trying with $service..."
 
-        ip=$(get_ipv6)
+            ip="$(curl -6 -s $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
+            test -n "$ip" && break
+        done
     else
         for service in ${services[@]}; do
             echo "Trying with $service..."
