@@ -11,7 +11,7 @@ services=(
     "ifconfig.me"
 )
 get_ipv6() {
-    ip -6 neigh | grep router | grep -v "fe80" | awk '{print \$1}'
+    ip -6 neigh | grep router | grep -v "fe80" | awk '{print $1}'
 }
 
 [[ "${use_ipv6}" = "true" ]] && domain_record_type="AAAA" || domain_record_type="A"
