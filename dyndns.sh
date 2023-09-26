@@ -38,7 +38,6 @@ while ( true ); do
         echo "Trying to get ipv6 address..."
 
         ip=get_ipv6
-        test -n "$ip" && break
     else
         for service in ${services[@]}; do
             echo "Trying with $service..."
