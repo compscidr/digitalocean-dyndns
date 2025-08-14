@@ -21,7 +21,7 @@ Pick one of the options below using the following settings:
 ### Docker (Recommended)
 
 ```
-$ docker pull tunix/digitalocean-dyndns
+$ docker pull compscidr/digitalocean-dyndns
 $ docker run -d --name dyndns \
     -e DIGITALOCEAN_TOKEN="your_token_here" \
     -e DOMAIN="yourdomain.com" \
