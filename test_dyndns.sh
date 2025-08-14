@@ -55,15 +55,15 @@ use_ipv6=${USE_IPV6:-"false"}
 use_dual_stack=${USE_DUAL_STACK:-"false"}
 
 services=(
-    "ifconfig.co"
     "ipinfo.io/ip"
     "ifconfig.me"
+    "ifconfig.co"
 )
 ipv6_services=(
     "icanhazip.com"
-    "ifconfig.co"
     "ipinfo.io/ip"
     "ifconfig.me"
+    "ifconfig.co"
 )
 
 # Functions from dyndns.sh
@@ -80,13 +80,21 @@ fetch_ip() {
         for service in ${ipv6_services[@]}; do
             echo "Trying with $service for IPv6..." >&2
             ip="$(curl -6 -s --connect-timeout 10 $service)"
-            test -n "$ip" && break
+            # Basic validation: IPv6 should contain colons and hex characters
+            if [[ -n "$ip" && "$ip" =~ ^[0-9a-fA-F:]+$ && "$ip" == *":"* ]]; then
+                break
+            fi
+            ip=""
         done
     else
         for service in ${services[@]}; do
             echo "Trying with $service for IPv4..." >&2
-            ip="$(curl -s --connect-timeout 10 $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
-            test -n "$ip" && break
+            ip="$(curl -s --connect-timeout 10 $service | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)"
+            # Basic validation: should be a valid IPv4 format
+            if [[ -n "$ip" && "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                break
+            fi
+            ip=""
         done
     fi
     
@@ -127,9 +135,9 @@ is_valid_ipv6() {
 test_ipv4_resolution() {
     print_test_header "Testing IPv4 Address Resolution"
     
-    # Check if we have internet connectivity
-    if ! curl -s --connect-timeout 5 ifconfig.co >/dev/null 2>&1; then
-        print_info "No internet connectivity detected - testing with mock IP addresses"
+    # Check if we have internet connectivity by testing a reliable service
+    if ! curl -s --connect-timeout 5 ipinfo.io/ip | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
+        print_info "No reliable IPv4 connectivity detected - testing with mock IP addresses"
         # Test with mock IPv4 address
         local ipv4_address="203.0.113.1"  # Test IPv4 address from RFC 5737
         print_info "Using mock IPv4 address: $ipv4_address"
@@ -261,7 +269,7 @@ test_dual_stack_mode() {
         local ipv6_address
         
         # Try to fetch real addresses, use mock if no connectivity
-        if curl -s --connect-timeout 2 ifconfig.co >/dev/null 2>&1; then
+        if curl -s --connect-timeout 2 ipinfo.io/ip | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
             ipv4_address=$(fetch_ip "ipv4")
         else
             ipv4_address="203.0.113.1"  # Mock IPv4
@@ -343,7 +351,7 @@ test_ipv4_only_mode() {
         
         local ipv4_address
         # Try to fetch real address, use mock if no connectivity
-        if curl -s --connect-timeout 2 ifconfig.co >/dev/null 2>&1; then
+        if curl -s --connect-timeout 2 ipinfo.io/ip | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
             ipv4_address=$(fetch_ip "ipv4")
         else
             ipv4_address="203.0.113.1"  # Mock IPv4

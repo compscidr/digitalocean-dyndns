@@ -7,15 +7,15 @@ use_ipv6=${USE_IPV6:-"false"}
 use_dual_stack=${USE_DUAL_STACK:-"false"}
 
 services=(
-    "ifconfig.co"
     "ipinfo.io/ip"
     "ifconfig.me"
+    "ifconfig.co"
 )
 ipv6_services=(
     "icanhazip.com"
-    "ifconfig.co"
     "ipinfo.io/ip"
     "ifconfig.me"
+    "ifconfig.co"
 )
 
 die() {
@@ -30,14 +30,22 @@ fetch_ip() {
     if [[ "$ip_version" == "ipv6" ]]; then
         for service in ${ipv6_services[@]}; do
             echo "Trying with $service for IPv6..."
-            ip="$(curl -6 -s $service)"
-            test -n "$ip" && break
+            ip="$(curl -6 -s --connect-timeout 10 $service)"
+            # Basic validation: IPv6 should contain colons and hex characters
+            if [[ -n "$ip" && "$ip" =~ ^[0-9a-fA-F:]+$ && "$ip" == *":"* ]]; then
+                break
+            fi
+            ip=""
         done
     else
         for service in ${services[@]}; do
             echo "Trying with $service for IPv4..."
-            ip="$(curl -s $service | grep '[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}')"
-            test -n "$ip" && break
+            ip="$(curl -s --connect-timeout 10 $service | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)"
+            # Basic validation: should be a valid IPv4 format
+            if [[ -n "$ip" && "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                break
+            fi
+            ip=""
         done
     fi
     
