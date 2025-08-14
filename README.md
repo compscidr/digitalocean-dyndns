@@ -61,3 +61,19 @@ For dual-stack IPv4/IPv6 support:
 ```
 $ DIGITALOCEAN_TOKEN="your_token_here" DOMAIN="yourdomain.com" NAME="subdomain" USE_DUAL_STACK="true" SLEEP_INTERVAL=2 ./dyndns.sh
 ```
+
+## Testing
+
+The repository includes a test script that validates the IP address resolution functionality without making actual calls to DigitalOcean:
+
+```bash
+$ ./test_dyndns.sh
+```
+
+The test script validates:
+- IPv4 and IPv6 address resolution and format validation
+- Different operational modes (dual-stack, IPv6-only, IPv4-only)
+- Service availability checking
+- Mock DNS record processing logic
+
+The tests will use mock IP addresses if internet connectivity is not available, ensuring the tests can run in restricted environments.
