@@ -29,7 +29,7 @@ fetch_ip() {
     
     if [[ "$ip_version" == "ipv6" ]]; then
         for service in ${ipv6_services[@]}; do
-            echo "Trying with $service for IPv6..."
+            echo "Trying with $service for IPv6..." >&2
             ip="$(curl -6 -s --connect-timeout 10 $service)"
             # Basic validation: IPv6 should contain colons and hex characters
             if [[ -n "$ip" && "$ip" =~ ^[0-9a-fA-F:]+$ && "$ip" == *":"* ]]; then
@@ -39,7 +39,7 @@ fetch_ip() {
         done
     else
         for service in ${services[@]}; do
-            echo "Trying with $service for IPv4..."
+            echo "Trying with $service for IPv4..." >&2
             ip="$(curl -s --connect-timeout 10 $service | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)"
             # Basic validation: should be a valid IPv4 format
             if [[ -n "$ip" && "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
