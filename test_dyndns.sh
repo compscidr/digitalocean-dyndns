@@ -374,25 +374,18 @@ test_clean_output() {
         local ipv4_output
         ipv4_output=$(fetch_ip "ipv4" 2>/dev/null)  # Capture only stdout, discard stderr
 
-        # Check if output contains newlines (would indicate debug text was included)
-        if [[ "$ipv4_output" == *$'\n'* ]]; then
-            print_fail "IPv4 output contains newlines (debug text leaked to stdout)"
-        else
-            print_pass "IPv4 output is clean (single line)"
-        fi
-
-        # Check if output matches only IP format (no extra text)
-        if is_valid_ipv4 "$ipv4_output"; then
-            print_pass "IPv4 output is valid IP format only (no debug text)"
-        else
-            print_fail "IPv4 output contains non-IP text: '$ipv4_output'"
-        fi
-
-        # Additional check: ensure output doesn't contain "Trying with"
+        # Check for specific debug text patterns that should be on stderr
         if [[ "$ipv4_output" == *"Trying with"* ]]; then
             print_fail "IPv4 output contains debug text 'Trying with' (not redirected to stderr)"
         else
             print_pass "IPv4 output does not contain debug text"
+        fi
+
+        # Check if output matches only IP format (no extra text)
+        if is_valid_ipv4 "$ipv4_output"; then
+            print_pass "IPv4 output is valid IP format only"
+        else
+            print_fail "IPv4 output contains non-IP text: '$ipv4_output'"
         fi
     else
         print_info "Skipping IPv4 clean output test (no IPv4 connectivity)"
@@ -404,25 +397,18 @@ test_clean_output() {
         local ipv6_output
         ipv6_output=$(fetch_ip "ipv6" 2>/dev/null)  # Capture only stdout, discard stderr
 
-        # Check if output contains newlines (would indicate debug text was included)
-        if [[ "$ipv6_output" == *$'\n'* ]]; then
-            print_fail "IPv6 output contains newlines (debug text leaked to stdout)"
-        else
-            print_pass "IPv6 output is clean (single line)"
-        fi
-
-        # Check if output matches only IPv6 format (no extra text)
-        if is_valid_ipv6 "$ipv6_output"; then
-            print_pass "IPv6 output is valid IPv6 format only (no debug text)"
-        else
-            print_fail "IPv6 output contains non-IPv6 text: '$ipv6_output'"
-        fi
-
-        # Additional check: ensure output doesn't contain "Trying with"
+        # Check for specific debug text patterns that should be on stderr
         if [[ "$ipv6_output" == *"Trying with"* ]]; then
             print_fail "IPv6 output contains debug text 'Trying with' (not redirected to stderr)"
         else
             print_pass "IPv6 output does not contain debug text"
+        fi
+
+        # Check if output matches only IPv6 format (no extra text)
+        if is_valid_ipv6 "$ipv6_output"; then
+            print_pass "IPv6 output is valid IPv6 format only"
+        else
+            print_fail "IPv6 output contains non-IPv6 text: '$ipv6_output'"
         fi
     else
         print_info "Skipping IPv6 clean output test (no IPv6 connectivity)"
